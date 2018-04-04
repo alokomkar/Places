@@ -14,12 +14,32 @@
     <android.support.v7.widget.CardView
         app:cardCornerRadius="@dimen/cardview_default_radius"
         app:cardElevation="@dimen/cardview_default_elevation"
+        app:cardBackgroundColor="@android:color/white"
+        android:layout_margin="@dimen/default_mini_padding"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvFrom"
+                android:padding="@dimen/default_mini_padding"
+                android:hint="@string/from"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_below="@id/tvFrom"
+                android:id="@+id/divider"
+                android:background="@color/divider_color"
+                android:layout_height="@dimen/divider_height" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/divider"
+                android:id="@+id/tvTo"
+                android:padding="@dimen/default_mini_padding"
+                android:hint="@string/to"/>
         </RelativeLayout>
     </android.support.v7.widget.CardView>
 </FrameLayout>
