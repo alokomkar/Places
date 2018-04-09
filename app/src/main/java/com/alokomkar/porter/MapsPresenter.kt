@@ -3,6 +3,12 @@ package com.alokomkar.porter
 import android.os.Bundle
 import android.os.Handler
 import android.os.ResultReceiver
+import com.alokomkar.porter.network.ServerAPI
+import io.reactivex.Observer
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
+import org.json.JSONObject
 
 /**
  * Created by Alok on 09/04/18.
@@ -19,6 +25,9 @@ class MapsPresenter( private val mapsView : MapsView ) {
     private var mCountryOutput: String? = null
     private var mStreetOutput: String? = null
     private var mPinCode: String? = null
+
+    private var mServerAPI : ServerAPI = PorterApplication.getServerApI()!!
+    private val mCompositeDisposable: CompositeDisposable = CompositeDisposable()
 
     inner class AddressResultReceiver(handler: Handler) : ResultReceiver(handler) {
         /**
@@ -38,7 +47,6 @@ class MapsPresenter( private val mapsView : MapsView ) {
 
             mapsView.setCurrentAddress( mAddressOutput!! )
 
-
         }
 
     }
@@ -46,5 +54,53 @@ class MapsPresenter( private val mapsView : MapsView ) {
     fun getAddressResultReceiver(handler: Handler): AddressResultReceiver {
         return AddressResultReceiver(handler)
     }
+
+    fun getServiceAbility() {
+        mServerAPI.getServiceAbility().subscribeOn(Schedulers.io())
+                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe( getCommonObserver("serviceable") )
+    }
+
+    fun getVehicleCost() {
+        mServerAPI.getServiceAbility().subscribeOn(Schedulers.io())
+                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe( getCommonObserver("cost") )
+    }
+
+    fun getVehicleETA() {
+        mServerAPI.getServiceAbility().subscribeOn(Schedulers.io())
+                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe( getCommonObserver("eta") )
+    }
+
+    private fun getCommonObserver( type : String ): Observer<JSONObject> {
+
+        return object : Observer<JSONObject> {
+
+            override fun onError(e: Throwable) {
+                e.printStackTrace()
+            }
+
+            override fun onNext(t: JSONObject) {
+                when( type ) {
+                    "serviceable" -> mapsView.onServiceResult( t.getBoolean("serviceable"))
+                    "cost" -> mapsView.onVehicleCost( t.getInt("cost"))
+                    "eta" -> mapsView.onVehicleETA( t.getInt("eta"))
+                }
+
+            }
+
+            override fun onSubscribe(d: Disposable) {
+                mCompositeDisposable.add(d)
+            }
+
+            override fun onComplete() {
+
+            }
+
+        }
+
+    }
+
 
 }

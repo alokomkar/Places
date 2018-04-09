@@ -32,6 +32,9 @@ import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import com.alokomkar.porter.LocationUtils.Companion.checkPlayServices
+import com.alokomkar.porter.network.hide
+import com.alokomkar.porter.network.show
+import com.alokomkar.porter.network.showToast
 import com.alokomkar.porter.utils.handleMultiplePermission
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -51,35 +54,48 @@ class MapsActivity : AppCompatActivity(),
         MapsView {
 
 
-
     private lateinit var mMap: GoogleMap
     private lateinit var mResultReceiver: MapsPresenter.AddressResultReceiver
     private lateinit var mGoogleApiClient : GoogleApiClient
-    private var etPlace : TextView ?= null
+    private var tvCurrentPlace: TextView ?= null
     private val PERMISSIONS_REQUEST_CODE_LOCATION = 113
     private lateinit var mMapsPresenter : MapsPresenter
 
     override fun showProgress(message: String) {
-
+        if( progressLayout != null )
+            progressLayout.show()
     }
 
     override fun hideProgress() {
-
+        if( progressLayout != null )
+            progressLayout.hide()
     }
 
     override fun onError(error: String) {
-
+        this.showToast( error )
     }
 
-    override fun onConnectionFailed(p0: ConnectionResult) {
-
+    override fun onConnectionFailed(result: ConnectionResult) {
+        if( result.errorMessage != null )
+            onError( result.errorMessage!! )
     }
 
     override fun onLocationChanged(location: Location?) {
         if (location != null)
             changeMap(location)
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this)
+        LocationServices.FusedLocationApi.removeLocationUpdates( mGoogleApiClient, this )
+    }
+
+    override fun onServiceResult(isServicable: Boolean) {
+
+    }
+
+    override fun onVehicleCost(cost: Int) {
+
+    }
+
+    override fun onVehicleETA(eta: Int) {
+
     }
 
     @SuppressLint("RestrictedApi")
@@ -96,17 +112,13 @@ class MapsActivity : AppCompatActivity(),
             LocationServices.FusedLocationApi.removeLocationUpdates( mGoogleApiClient, this )
         }
 
-        try {
-            val mLocationRequest = LocationRequest()
-            mLocationRequest.interval = 10000
-            mLocationRequest.fastestInterval = 5000
-            mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            LocationServices.FusedLocationApi.requestLocationUpdates(
-                    mGoogleApiClient, mLocationRequest, this)
+        val mLocationRequest = LocationRequest()
+        mLocationRequest.interval = 10000
+        mLocationRequest.fastestInterval = 5000
+        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, this)
 
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
     }
 
     private fun changeMap(location: Location) {
@@ -136,8 +148,9 @@ class MapsActivity : AppCompatActivity(),
     }
 
     override fun setCurrentAddress(locationAddress: String) {
-        if( etPlace != null ) {
-            etPlace!!.text = locationAddress
+        if( tvCurrentPlace != null ) {
+            tvCurrentPlace!!.text = locationAddress
+            tvLocation.text = locationAddress
         }
     }
 
@@ -146,9 +159,9 @@ class MapsActivity : AppCompatActivity(),
 
     override fun onPlaceSelected(place: Place?) {
         if( place != null ) {
-            if( etPlace != null ) {
+            if( tvCurrentPlace != null ) {
                 placeMarkerForLocation( place.latLng.latitude, place.latLng.longitude )
-                when( etPlace!!.id ) {
+                when( tvCurrentPlace!!.id ) {
                     R.id.tvFrom -> {
                         fromPlace = place
                     }
@@ -163,21 +176,26 @@ class MapsActivity : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+        showProgress(getString(R.string.loading))
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapsFragment = supportFragmentManager
                 .findFragmentById(R.id.mapsFragment) as SupportMapFragment
 
         mapsFragment.getMapAsync(this)
+
         tvFrom.setOnClickListener {
-            etPlace = tvFrom
+            tvCurrentPlace = tvFrom
             openLocationsPicker()
         }
+
         tvTo.setOnClickListener {
-            etPlace = tvTo
+            tvCurrentPlace = tvTo
             openLocationsPicker()
         }
+
         mMapsPresenter = MapsPresenter( this )
         mResultReceiver = mMapsPresenter.getAddressResultReceiver(Handler())
+
         val permissionList = arrayListOf<String>(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
         if (!handleMultiplePermission(this, permissionList)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -254,6 +272,7 @@ class MapsActivity : AppCompatActivity(),
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
+        hideProgress()
         mMap = googleMap
         mMap.setOnCameraChangeListener { cameraPosition ->
             Log.d("Camera postion change" + "", cameraPosition.toString() + "")
@@ -269,8 +288,13 @@ class MapsActivity : AppCompatActivity(),
 
     private fun placeMarkerForLocation( latitude : Double, longitude : Double ) {
         val locationLatLng = LatLng( latitude, longitude )
-        mMap.addMarker(MarkerOptions().position(locationLatLng).title("Marker in Bangalore"))
+        //mMap.addMarker(MarkerOptions().position(locationLatLng).title("Marker in Bangalore"))
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(locationLatLng, 12.0f))
+        mMap.clear()
+        val mLocation = Location("")
+        mLocation.latitude = latitude
+        mLocation.longitude = longitude
+        startIntentService(mLocation)
     }
 
     /**
@@ -280,7 +304,6 @@ class MapsActivity : AppCompatActivity(),
     private fun startIntentService(mLocation: Location) {
 
         // Create an intent for passing to the intent service responsible for fetching the address.
-
         val intent = Intent(this, FetchAddressIntentService::class.java)
 
         // Pass the result receiver as an extra to the service.

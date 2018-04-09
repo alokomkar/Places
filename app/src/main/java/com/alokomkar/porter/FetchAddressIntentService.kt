@@ -9,10 +9,11 @@ import android.location.Location
 import android.os.Bundle
 import android.os.ResultReceiver
 import android.util.Log
-import com.alokomkar.porter.network.ApiGenerator
 import com.alokomkar.porter.network.LocationModel
 import com.alokomkar.porter.network.ReverseGeoCodeApi
-import retrofit.RetrofitError
+import io.reactivex.Observer
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 
 /**
  * Asynchronously handles an intent using a worker thread. Receives a ResultReceiver object and a
@@ -23,95 +24,7 @@ import retrofit.RetrofitError
  * This constructor is required, and calls the super IntentService(String)
  * constructor with the name for a worker thread.
  */
-class FetchAddressIntentService : IntentService(TAG), retrofit.Callback<LocationModel> {
-    override fun failure(error: RetrofitError?) {
-
-    }
-
-    override fun success(locationModel: LocationModel?, response: retrofit.client.Response?) {
-
-        if( locationModel == null || locationModel.resultsList.isEmpty()) {
-            return
-        }
-
-        val addressComponentList = locationModel.resultsList.get(0).address_components
-
-        if (addressComponentList!!.isEmpty()) {
-            deliverResultToReceiver(LocationUtils.LocationConstants.FAILURE_RESULT,
-                    "Unable to fetch location",
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null);
-        } else {
-
-
-            for (address in addressComponentList) {
-                Log.d("address", address.toString())
-                for (type in address.types!!) {
-
-
-                    if (type.equals("street_number", ignoreCase = true)) {
-                        street = address.long_name
-                    }
-
-                    if (type.equals("route", ignoreCase = true)) {
-                        if (street == null)
-                            street = address.long_name
-                        else
-                            street = street + " " + address.long_name
-                    }
-
-                    if (type.equals("postal_code", ignoreCase = true)) {
-                        postalcode = address.long_name
-                    }
-
-                    if (type.equals("sublocality_level_2", ignoreCase = true)) {
-                        if (street == null)
-                            street = address.long_name
-                        else
-                            street = street + " " + address.long_name
-                    }
-
-                    if (type.equals("administrative_area_level_2", ignoreCase = true)) {
-                        area1 = address.long_name
-                    }
-
-                    if (type.equals("locality", ignoreCase = true)) {
-                        city = address.long_name
-                    }
-                    if (type.equals("administrative_area_level_1", ignoreCase = true)) {
-                        state = address.long_name
-                    }
-                    if (type.equals("sublocality_level_1", ignoreCase = true)) {
-                        area = address.long_name
-                    }
-
-
-                    if (type.equals("country", ignoreCase = true)) {
-                        country = address.long_name
-                    }
-
-
-                }
-
-
-            }
-
-            deliverResultToReceiver(LocationUtils.LocationConstants.SUCCESS_RESULT,
-                    locationModel.resultsList.get(0).formatted_address,
-                    city,
-                    state,
-                    country,
-                    area,
-                    street, postalcode)
-
-
-        }
-    }
-
+class FetchAddressIntentService : IntentService(TAG) {
 
     private var city: String? = null
     private var state: String? = null
@@ -157,13 +70,117 @@ class FetchAddressIntentService : IntentService(TAG), retrofit.Callback<Location
             return
         }
 
-        val reverseGeoCodeApi  : ReverseGeoCodeApi = ApiGenerator.createService(ReverseGeoCodeApi::class.java)
-        reverseGeoCodeApi.getStateCityFromLocation(
-                location.latitude.toString() + "," + location.longitude.toString(),
-                resources.getString(R.string.google_maps_key),
-                this
-        )
+        val reverseGeoCodeApi  : ReverseGeoCodeApi = PorterApplication.getGeoCodeApi()!!
+        reverseGeoCodeApi.getStateCityFromLocation(location.latitude.toString() + "," + location.longitude.toString(),
+                resources.getString(R.string.google_maps_key))
+                .subscribeOn(Schedulers.io())
+                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe( getLocationObserver() )
 
+
+    }
+
+    private fun getLocationObserver(): Observer<LocationModel?> {
+        return object : Observer<LocationModel?> {
+            override fun onSubscribe(d: Disposable) {
+
+            }
+
+            override fun onNext(locationModel: LocationModel) {
+                if( locationModel.resultsList.isEmpty()) {
+                    return
+                }
+
+                val addressComponentList = locationModel.resultsList.get(0).address_components
+
+                if (addressComponentList!!.isEmpty()) {
+                    deliverResultToReceiver(LocationUtils.LocationConstants.FAILURE_RESULT,
+                            "Unable to fetch location",
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null);
+                } else {
+
+
+                    for (address in addressComponentList) {
+                        Log.d("address", address.toString())
+                        for (type in address.types!!) {
+
+
+                            if (type.equals("street_number", ignoreCase = true)) {
+                                street = address.long_name
+                            }
+
+                            if (type.equals("route", ignoreCase = true)) {
+                                if (street == null)
+                                    street = address.long_name
+                                else
+                                    street = street + " " + address.long_name
+                            }
+
+                            if (type.equals("postal_code", ignoreCase = true)) {
+                                postalcode = address.long_name
+                            }
+
+                            if (type.equals("sublocality_level_2", ignoreCase = true)) {
+                                if (street == null)
+                                    street = address.long_name
+                                else
+                                    street = street + " " + address.long_name
+                            }
+
+                            if (type.equals("administrative_area_level_2", ignoreCase = true)) {
+                                area1 = address.long_name
+                            }
+
+                            if (type.equals("locality", ignoreCase = true)) {
+                                city = address.long_name
+                            }
+                            if (type.equals("administrative_area_level_1", ignoreCase = true)) {
+                                state = address.long_name
+                            }
+                            if (type.equals("sublocality_level_1", ignoreCase = true)) {
+                                area = address.long_name
+                            }
+
+
+                            if (type.equals("country", ignoreCase = true)) {
+                                country = address.long_name
+                            }
+
+
+                        }
+
+
+                    }
+
+                    deliverResultToReceiver(LocationUtils.LocationConstants.SUCCESS_RESULT,
+                            locationModel.resultsList.get(0).formatted_address,
+                            city,
+                            state,
+                            country,
+                            area,
+                            street, postalcode)
+
+
+                }
+            }
+
+            override fun onComplete() {
+
+            }
+
+            override fun onError(e: Throwable) {
+                if( e.message != null ) {
+                    Log.d(TAG, "Location Error : " + e.message )
+                }
+                e.printStackTrace()
+            }
+
+        }
     }
 
     /**
@@ -202,7 +219,7 @@ class FetchAddressIntentService : IntentService(TAG), retrofit.Callback<Location
     }
 
     companion object {
-        private val TAG = "FetchAddressIntentService"
+        private val TAG = "FetchAddressIS"
     }
 
 

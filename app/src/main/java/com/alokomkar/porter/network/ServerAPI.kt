@@ -1,9 +1,10 @@
 package com.alokomkar.porter.network
 
-import retrofit.Callback
-import retrofit.client.Response
-import retrofit.http.GET
-import retrofit.http.Query
+import io.reactivex.Observable
+import org.json.JSONObject
+import retrofit2.http.GET
+import retrofit2.http.Query
+
 
 /**
  * Created by Alok on 09/04/18.
@@ -11,12 +12,12 @@ import retrofit.http.Query
 interface ServerAPI {
 
     @GET("users/serviceability")
-    fun getServiceAbility(callback: Callback<Response>)
+    fun getServiceAbility() : Observable<JSONObject>
 
     @GET("vehicles/cost")
-    fun getVehiclesCost(@Query("lat") latitude : Double, @Query("lng") longitude : Double, callback: Callback<Response>)
+    fun getVehiclesCost(@Query("lat") latitude : Double, @Query("lng") longitude : Double) : Observable<JSONObject>
 
     @GET("vehicles/eta")
-    fun getVehiclesEta(@Query("lat") latitude : Double, @Query("lng") longitude : Double, callback: Callback<Response>)
+    fun getVehiclesEta(@Query("lat") latitude : Double, @Query("lng") longitude : Double) : Observable<JSONObject>
 
 }

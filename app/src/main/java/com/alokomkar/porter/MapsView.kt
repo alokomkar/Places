@@ -5,4 +5,7 @@ package com.alokomkar.porter
  */
 interface MapsView : BaseView {
     fun setCurrentAddress( locationAddress : String )
+    fun onServiceResult( isServicable : Boolean )
+    fun onVehicleCost( cost : Int )
+    fun onVehicleETA( eta : Int )
 }

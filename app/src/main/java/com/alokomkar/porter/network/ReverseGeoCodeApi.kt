@@ -1,12 +1,12 @@
 package com.alokomkar.porter.network
 
-import retrofit.Callback
-import retrofit.http.GET
-import retrofit.http.Query
+import io.reactivex.Observable
+import retrofit2.http.GET
+import retrofit2.http.Query
 
 interface ReverseGeoCodeApi {
 
     @GET("/json")
-    fun getStateCityFromLocation(@Query("latlng") latLng: String, @Query("api_key") apikey: String, callback: Callback<LocationModel>)
+    fun getStateCityFromLocation( @Query("latlng") latLng: String, @Query("api_key") apikey: String ) : Observable<LocationModel>
 
 }
