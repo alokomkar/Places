@@ -44,7 +44,8 @@
 
         <TextView
             android:id="@+id/tvLocation"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
+            android:minWidth="@dimen/min_width"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/default_mini_padding"
             android:layout_marginEnd="@dimen/default_mini_padding"
