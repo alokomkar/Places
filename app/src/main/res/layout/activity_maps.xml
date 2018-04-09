@@ -19,34 +19,30 @@
         android:layout_margin="@dimen/default_mini_padding"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <RelativeLayout
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <android.support.design.widget.TextInputLayout
-                android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:padding="@dimen/default_mini_padding"
                 android:hint="@string/from"
-                android:padding="@dimen/default_mini_padding"
-                android:id="@+id/tilFrom"
-                android:layout_height="wrap_content">
-                <android.support.design.widget.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/etFrom"/>
-            </android.support.design.widget.TextInputLayout>
-
-            <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:hint="@string/to"
-                android:padding="@dimen/default_mini_padding"
-                android:layout_below="@+id/tilFrom"
-                android:id="@+id/tilTo"
-                android:layout_height="wrap_content">
-                <android.support.design.widget.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/etTo"/>
-            </android.support.design.widget.TextInputLayout>
+                android:layout_height="wrap_content"
+                android:id="@+id/tvFrom"/>
 
-        </RelativeLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/divider_height"
+                android:background="@color/divider_color" />
+
+            <TextView
+                android:padding="@dimen/default_mini_padding"
+                android:hint="@string/to"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvTo"/>
+        </LinearLayout>
+
     </android.support.v7.widget.CardView>
 </FrameLayout>

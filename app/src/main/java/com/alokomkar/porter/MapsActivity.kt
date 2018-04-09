@@ -4,10 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.design.widget.TextInputEditText
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.places.Place
 import com.google.android.gms.location.places.ui.PlaceSelectionListener
@@ -21,7 +19,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_maps.*
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
-import com.google.android.gms.location.places.ui.PlaceAutocomplete
+
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -31,6 +29,7 @@ import android.os.Handler
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import com.alokomkar.porter.LocationUtils.Companion.checkPlayServices
 import com.alokomkar.porter.utils.handleMultiplePermission
@@ -56,7 +55,7 @@ class MapsActivity : AppCompatActivity(),
     private lateinit var mMap: GoogleMap
     private lateinit var mResultReceiver: MapsPresenter.AddressResultReceiver
     private lateinit var mGoogleApiClient : GoogleApiClient
-    private var etPlace : TextInputEditText ?= null
+    private var etPlace : TextView ?= null
     private val PERMISSIONS_REQUEST_CODE_LOCATION = 113
     private lateinit var mMapsPresenter : MapsPresenter
 
@@ -139,7 +138,7 @@ class MapsActivity : AppCompatActivity(),
 
     override fun setCurrentAddress(locationAddress: String) {
         if( etPlace != null )
-            etPlace!!.setText( locationAddress )
+            etPlace!!.text = locationAddress
     }
 
     override fun onPlaceSelected(place: Place?) {
@@ -160,12 +159,12 @@ class MapsActivity : AppCompatActivity(),
                 .findFragmentById(R.id.mapsFragment) as SupportMapFragment
 
         mapsFragment.getMapAsync(this)
-        etFrom.setOnClickListener {
-            etPlace = etFrom
+        tvFrom.setOnClickListener {
+            etPlace = tvFrom
             openLocationsPicker()
         }
-        etTo.setOnClickListener {
-            etPlace = etTo
+        tvTo.setOnClickListener {
+            etPlace = tvTo
             openLocationsPicker()
         }
         mMapsPresenter = MapsPresenter( this )
@@ -188,11 +187,11 @@ class MapsActivity : AppCompatActivity(),
                 // notify user
                 val dialog = AlertDialog.Builder(this)
                 dialog.setMessage("Location not enabled!")
-                dialog.setPositiveButton("Open location settings", DialogInterface.OnClickListener { paramDialogInterface, paramInt ->
+                dialog.setPositiveButton("Open location settings", { _, _ ->
                     val myIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                     startActivityForResult(myIntent, 1)
                 })
-                dialog.setNegativeButton("Cancel", DialogInterface.OnClickListener { paramDialogInterface, paramInt ->
+                dialog.setNegativeButton("Cancel", { _, _ ->
 
                 })
                 dialog.show()
@@ -225,8 +224,10 @@ class MapsActivity : AppCompatActivity(),
 
         } catch ( e : GooglePlayServicesRepairableException) {
             // ...
+            e.printStackTrace()
         } catch ( e : GooglePlayServicesNotAvailableException ) {
             // ...
+            e.printStackTrace()
         }
 
     }
