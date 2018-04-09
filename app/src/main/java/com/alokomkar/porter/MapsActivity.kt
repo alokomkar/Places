@@ -15,7 +15,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_maps.*
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
@@ -43,7 +42,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.places.ui.PlacePicker
 import com.google.android.gms.maps.model.CameraPosition
 
-
+@SuppressLint("SetTextI18n")
 @Suppress("DEPRECATION")
 class MapsActivity : AppCompatActivity(),
         OnMapReadyCallback,
@@ -60,6 +59,8 @@ class MapsActivity : AppCompatActivity(),
     private var tvCurrentPlace: TextView ?= null
     private val PERMISSIONS_REQUEST_CODE_LOCATION = 113
     private lateinit var mMapsPresenter : MapsPresenter
+    private var mCost : Int = 0
+    private var mETA : Int = 0
 
     override fun showProgress(message: String) {
         if( progressLayout != null )
@@ -88,14 +89,23 @@ class MapsActivity : AppCompatActivity(),
 
     override fun onServiceResult(isServicable: Boolean) {
 
+        if( isServicable ) tvBlocked.hide()
+        else tvBlocked.show()
+
+        if( isServicable )
+        mMapsPresenter.getVehicleETA( toPlace!!.latLng.latitude, toPlace!!.latLng.longitude )
+
     }
 
-    override fun onVehicleCost(cost: Int) {
 
+    override fun onVehicleCost(cost: Int) {
+        mCost = cost
+        tvLocation.text = "Cost : $mCost : ETA : $mETA minutes | Book now"
     }
 
     override fun onVehicleETA(eta: Int) {
-
+        mETA = eta
+        tvLocation.text = "Cost : $mCost : ETA : $mETA minutes | Book now"
     }
 
     @SuppressLint("RestrictedApi")
@@ -150,8 +160,8 @@ class MapsActivity : AppCompatActivity(),
     override fun setCurrentAddress(locationAddress: String) {
         if( tvCurrentPlace != null ) {
             tvCurrentPlace!!.text = locationAddress
-            tvLocation.text = locationAddress
         }
+        tvLocation.text = locationAddress
     }
 
     private var fromPlace: Place? = null
@@ -168,6 +178,11 @@ class MapsActivity : AppCompatActivity(),
                     R.id.tvTo ->{
                         toPlace = place
                     }
+                }
+
+                if( fromPlace != null && toPlace != null ) {
+                    mMapsPresenter.getServiceAbility()
+
                 }
             }
         }

@@ -61,14 +61,14 @@ class MapsPresenter( private val mapsView : MapsView ) {
                 .subscribe( getCommonObserver("serviceable") )
     }
 
-    fun getVehicleCost() {
-        mServerAPI.getServiceAbility().subscribeOn(Schedulers.io())
+    fun getVehicleCost( latitude : Double, longitude : Double ) {
+        mServerAPI.getVehiclesCost(latitude, longitude).subscribeOn(Schedulers.io())
                 .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
                 .subscribe( getCommonObserver("cost") )
     }
 
-    fun getVehicleETA() {
-        mServerAPI.getServiceAbility().subscribeOn(Schedulers.io())
+    fun getVehicleETA( latitude : Double, longitude : Double ) {
+        mServerAPI.getVehiclesEta( latitude, longitude ).subscribeOn(Schedulers.io())
                 .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
                 .subscribe( getCommonObserver("eta") )
     }
