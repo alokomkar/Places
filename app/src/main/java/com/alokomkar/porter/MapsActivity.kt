@@ -92,8 +92,10 @@ class MapsActivity : AppCompatActivity(),
         if( isServicable ) tvBlocked.hide()
         else tvBlocked.show()
 
-        if( isServicable )
-        mMapsPresenter.getVehicleETA( toPlace!!.latLng.latitude, toPlace!!.latLng.longitude )
+        if( isServicable ) {
+            mMapsPresenter.getVehicleETA( toPlace!!.latLng.latitude, toPlace!!.latLng.longitude )
+            mMapsPresenter.getVehicleCost( toPlace!!.latLng.latitude, toPlace!!.latLng.longitude )
+        }
 
     }
 

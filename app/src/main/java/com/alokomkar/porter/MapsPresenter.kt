@@ -3,12 +3,14 @@ package com.alokomkar.porter
 import android.os.Bundle
 import android.os.Handler
 import android.os.ResultReceiver
+import com.alokomkar.porter.network.Cost
+import com.alokomkar.porter.network.ETA
 import com.alokomkar.porter.network.ServerAPI
+import com.alokomkar.porter.network.Serviceable
 import io.reactivex.Observer
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import org.json.JSONObject
 
 /**
  * Created by Alok on 09/04/18.
@@ -58,36 +60,79 @@ class MapsPresenter( private val mapsView : MapsView ) {
     fun getServiceAbility() {
         mServerAPI.getServiceAbility().subscribeOn(Schedulers.io())
                 .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
-                .subscribe( getCommonObserver("serviceable") )
+                .subscribe( getServicable() )
     }
 
     fun getVehicleCost( latitude : Double, longitude : Double ) {
         mServerAPI.getVehiclesCost(latitude, longitude).subscribeOn(Schedulers.io())
                 .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
-                .subscribe( getCommonObserver("cost") )
+                .subscribe( getCost() )
     }
 
-    fun getVehicleETA( latitude : Double, longitude : Double ) {
-        mServerAPI.getVehiclesEta( latitude, longitude ).subscribeOn(Schedulers.io())
-                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
-                .subscribe( getCommonObserver("eta") )
-    }
+    private fun getCost(): Observer<Cost> {
 
-    private fun getCommonObserver( type : String ): Observer<JSONObject> {
-
-        return object : Observer<JSONObject> {
+        return object : Observer<Cost> {
 
             override fun onError(e: Throwable) {
                 e.printStackTrace()
             }
 
-            override fun onNext(t: JSONObject) {
-                when( type ) {
-                    "serviceable" -> mapsView.onServiceResult( t.getBoolean("serviceable"))
-                    "cost" -> mapsView.onVehicleCost( t.getInt("cost"))
-                    "eta" -> mapsView.onVehicleETA( t.getInt("eta"))
-                }
+            override fun onNext(t: Cost) {
+                mapsView.onVehicleCost(t.cost)
+            }
 
+            override fun onSubscribe(d: Disposable) {
+                mCompositeDisposable.add(d)
+            }
+
+            override fun onComplete() {
+
+            }
+
+        }
+
+    }
+
+    fun getVehicleETA( latitude : Double, longitude : Double ) {
+        mServerAPI.getVehiclesEta( latitude, longitude ).subscribeOn(Schedulers.io())
+                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe( getETA() )
+    }
+
+    private fun getETA( ): Observer<ETA> {
+
+        return object : Observer<ETA> {
+
+            override fun onError(e: Throwable) {
+                e.printStackTrace()
+            }
+
+            override fun onNext(t: ETA) {
+                mapsView.onVehicleCost(t.eta)
+            }
+
+            override fun onSubscribe(d: Disposable) {
+                mCompositeDisposable.add(d)
+            }
+
+            override fun onComplete() {
+
+            }
+
+        }
+
+    }
+
+    private fun getServicable( ): Observer<Serviceable> {
+
+        return object : Observer<Serviceable> {
+
+            override fun onError(e: Throwable) {
+                e.printStackTrace()
+            }
+
+            override fun onNext(t: Serviceable) {
+                mapsView.onServiceResult(t.serviceable)
             }
 
             override fun onSubscribe(d: Disposable) {

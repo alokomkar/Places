@@ -12,12 +12,12 @@ import retrofit2.http.Query
 interface ServerAPI {
 
     @GET("users/serviceability")
-    fun getServiceAbility() : Observable<JSONObject>
+    fun getServiceAbility() : Observable<Serviceable>
 
     @GET("vehicles/cost")
-    fun getVehiclesCost(@Query("lat") latitude : Double, @Query("lng") longitude : Double) : Observable<JSONObject>
+    fun getVehiclesCost(@Query("lat") latitude : Double, @Query("lng") longitude : Double) : Observable<Cost>
 
     @GET("vehicles/eta")
-    fun getVehiclesEta(@Query("lat") latitude : Double, @Query("lng") longitude : Double) : Observable<JSONObject>
+    fun getVehiclesEta(@Query("lat") latitude : Double, @Query("lng") longitude : Double) : Observable<ETA>
 
 }
