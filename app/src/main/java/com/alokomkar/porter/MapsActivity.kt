@@ -84,8 +84,8 @@ class MapsActivity : AppCompatActivity(),
 
     @SuppressLint("RestrictedApi")
     override fun onConnected(p0: Bundle?) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if ( ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
             return
         }
         val mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
@@ -110,15 +110,14 @@ class MapsActivity : AppCompatActivity(),
     }
 
     private fun changeMap(location: Location) {
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
         }
 
         // check if map is created successfully or not
-        mMap.uiSettings.isZoomControlsEnabled = false
         mMap.isMyLocationEnabled = true
-        mMap.uiSettings.isMyLocationButtonEnabled = true
         val cameraPosition = CameraPosition.Builder()
                 .target(LatLng(location.latitude, location.longitude)).zoom(19f).tilt(70f).build()
         mMap.animateCamera(CameraUpdateFactory
@@ -137,19 +136,29 @@ class MapsActivity : AppCompatActivity(),
     }
 
     override fun setCurrentAddress(locationAddress: String) {
-        if( etPlace != null )
+        if( etPlace != null ) {
             etPlace!!.text = locationAddress
-    }
-
-    override fun onPlaceSelected(place: Place?) {
-        if( place != null ) {
-            fragmentManager.popBackStack()
-            if( etPlace != null )
-                placeMarkerForLocation( place.latLng.latitude, place.latLng.longitude )
         }
     }
 
+    private var fromPlace: Place? = null
+    private var toPlace : Place? = null
 
+    override fun onPlaceSelected(place: Place?) {
+        if( place != null ) {
+            if( etPlace != null ) {
+                placeMarkerForLocation( place.latLng.latitude, place.latLng.longitude )
+                when( etPlace!!.id ) {
+                    R.id.tvFrom -> {
+                        fromPlace = place
+                    }
+                    R.id.tvTo ->{
+                        toPlace = place
+                    }
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -233,7 +242,7 @@ class MapsActivity : AppCompatActivity(),
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+
         if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 // The user has selected a place. Extract the name and address.
@@ -241,6 +250,7 @@ class MapsActivity : AppCompatActivity(),
                 onPlaceSelected(place)
             }
         }
+        else super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -249,9 +259,6 @@ class MapsActivity : AppCompatActivity(),
             Log.d("Camera postion change" + "", cameraPosition.toString() + "")
             val latLong = cameraPosition.target
             mMap.clear()
-            mMap.uiSettings.isZoomGesturesEnabled = false
-            mMap.uiSettings.isZoomControlsEnabled = false
-
             val mLocation = Location("")
             mLocation.latitude = latLong.latitude
             mLocation.longitude = latLong.longitude
@@ -286,6 +293,7 @@ class MapsActivity : AppCompatActivity(),
         // (creating a process for it if needed); if it is running then it remains running. The
         // service kills itself automatically once all intents are processed.
         this.startService(intent)
+
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
