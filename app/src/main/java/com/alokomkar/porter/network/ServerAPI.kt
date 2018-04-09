@@ -1,7 +1,6 @@
 package com.alokomkar.porter.network
 
 import io.reactivex.Observable
-import org.json.JSONObject
 import retrofit2.http.GET
 import retrofit2.http.Query
 

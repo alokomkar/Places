@@ -176,15 +176,18 @@ class MapsActivity : AppCompatActivity(),
                 when( tvCurrentPlace!!.id ) {
                     R.id.tvFrom -> {
                         fromPlace = place
+                        tvFrom.text = place.address
+                        tvLocation.text = place.address
                     }
                     R.id.tvTo ->{
                         toPlace = place
+                        tvTo.text = place.address
+                        tvLocation.text = place.address
                     }
                 }
 
                 if( fromPlace != null && toPlace != null ) {
                     mMapsPresenter.getServiceAbility()
-
                 }
             }
         }
@@ -291,6 +294,7 @@ class MapsActivity : AppCompatActivity(),
     override fun onMapReady(googleMap: GoogleMap) {
         hideProgress()
         mMap = googleMap
+        mMap.uiSettings.isMyLocationButtonEnabled = true
         mMap.setOnCameraChangeListener { cameraPosition ->
             Log.d("Camera postion change" + "", cameraPosition.toString() + "")
             val latLong = cameraPosition.target
