@@ -96,6 +96,7 @@ class MapsActivity : AppCompatActivity(),
             mMapsPresenter.getVehicleETA( toPlace!!.latLng.latitude, toPlace!!.latLng.longitude )
             mMapsPresenter.getVehicleCost( toPlace!!.latLng.latitude, toPlace!!.latLng.longitude )
         }
+        mMapsPresenter.getServiceAbility(20)
 
     }
 
@@ -187,7 +188,7 @@ class MapsActivity : AppCompatActivity(),
                 }
 
                 if( fromPlace != null && toPlace != null ) {
-                    mMapsPresenter.getServiceAbility()
+                    mMapsPresenter.getServiceAbility(0)
                 }
             }
         }

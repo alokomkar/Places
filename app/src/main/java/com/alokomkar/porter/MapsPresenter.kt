@@ -58,12 +58,20 @@ class MapsPresenter( private val mapsView : MapsView ) {
         return AddressResultReceiver(handler)
     }
 
-    fun getServiceAbility() {
-        mServerAPI.getServiceAbility().subscribeOn(Schedulers.io())
-                .delay(20, TimeUnit.SECONDS)
-                .repeat()
-                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
-                .subscribe( getServicable() )
+    fun getServiceAbility( delayInSeconds : Long ) {
+        if( delayInSeconds == 0L ) {
+            mServerAPI.getServiceAbility().subscribeOn(Schedulers.io())
+                    .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                    .subscribe( getServicable() )
+        }
+        else {
+            mServerAPI.getServiceAbility().subscribeOn(Schedulers.io())
+                    .repeat()
+                    .delay( delayInSeconds, TimeUnit.SECONDS )
+                    .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                    .subscribe( getServicable() )
+        }
+
     }
 
     fun getVehicleCost( latitude : Double, longitude : Double ) {
