@@ -9,7 +9,7 @@ import android.location.Location
 import android.os.Bundle
 import android.os.ResultReceiver
 import android.util.Log
-import com.alokomkar.porter.network.LocationApiGenerator
+import com.alokomkar.porter.network.ApiGenerator
 import com.alokomkar.porter.network.LocationModel
 import com.alokomkar.porter.network.ReverseGeoCodeApi
 import retrofit.RetrofitError
@@ -30,10 +30,21 @@ class FetchAddressIntentService : IntentService(TAG), retrofit.Callback<Location
 
     override fun success(locationModel: LocationModel?, response: retrofit.client.Response?) {
 
-        val addressComponentList = locationModel!!.resultsList.get(0).address_components
+        if( locationModel == null || locationModel.resultsList.isEmpty()) {
+            return
+        }
+
+        val addressComponentList = locationModel.resultsList.get(0).address_components
 
         if (addressComponentList!!.isEmpty()) {
-            deliverResultToReceiver(LocationUtils.LocationConstants.FAILURE_RESULT, "Unable to fetch location", null, null, null, null, null, null);
+            deliverResultToReceiver(LocationUtils.LocationConstants.FAILURE_RESULT,
+                    "Unable to fetch location",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
         } else {
 
 
@@ -146,7 +157,7 @@ class FetchAddressIntentService : IntentService(TAG), retrofit.Callback<Location
             return
         }
 
-        val reverseGeoCodeApi  : ReverseGeoCodeApi = LocationApiGenerator.createService(ReverseGeoCodeApi::class.java)
+        val reverseGeoCodeApi  : ReverseGeoCodeApi = ApiGenerator.createService(ReverseGeoCodeApi::class.java)
         reverseGeoCodeApi.getStateCityFromLocation(
                 location.latitude.toString() + "," + location.longitude.toString(),
                 resources.getString(R.string.google_maps_key),

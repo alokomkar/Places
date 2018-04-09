@@ -13,7 +13,7 @@ import retrofit.client.OkClient
  * Created by varun on 9/20/17.
  */
 // No need to instantiate this class.
-class LocationApiGenerator {
+class ApiGenerator {
     companion object {
 
         var locationStatus: String? = null
@@ -29,9 +29,8 @@ class LocationApiGenerator {
                     .setEndpoint(PLACES_URL)
                     .setLogLevel(RestAdapter.LogLevel.FULL)
                     .setLog { msg -> Log.d("Retro", msg)
-                        Log.d("Retro",msg)
+                        Log.d("LocationApi", msg)
                         if(msg.contains("ZERO_RESULTS",ignoreCase = false)) {
-                            Log.i("RETRO RESULT",".......Invalid location verified")
                             locationStatus = "Invalid"
                         } else
                             locationStatus = "Valid"
@@ -48,10 +47,9 @@ class LocationApiGenerator {
             val builder = RestAdapter.Builder()
                     .setEndpoint(BASE_URL)
                     .setLogLevel(RestAdapter.LogLevel.FULL)
-                    .setLog { msg -> Log.d("Retro", msg)
-                        Log.d("Retro",msg)
+                    .setLog { msg -> Log.d("LocationApi", msg)
+                        Log.d("LocationApi",msg)
                         if(msg.contains("ZERO_RESULTS",ignoreCase = false)) {
-                            Log.i("RETRO RESULT",".......Invalid location verified")
                             locationStatus = "Invalid"
                         } else
                             locationStatus = "Valid"
@@ -66,7 +64,7 @@ class LocationApiGenerator {
             val builder = RestAdapter.Builder()
                     .setEndpoint(PLACES_BASE_URL)
                     .setLogLevel(RestAdapter.LogLevel.FULL)
-                    .setLog { msg -> Log.i("Retro", msg) }
+                    .setLog { msg -> Log.i("LocationApi", msg) }
                     .setClient(OkClient(OkHttpClient()))
 
             val adapter = builder.build()

@@ -288,16 +288,16 @@ class MapsActivity : AppCompatActivity(),
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 checkForPlayService()
             } else if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_DENIED){
-                val dialogBuilder = android.support.v7.app.AlertDialog.Builder(this!!)
+                val dialogBuilder = android.support.v7.app.AlertDialog.Builder(this)
                 dialogBuilder.setTitle("Location Permission needed to use the app")
                 dialogBuilder.setMessage("Allow app to access your location?")
                 dialogBuilder.setPositiveButton("Open App Permission") { dialog, whichButton ->
                     val intent: Intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.fromParts("package", this!!.packageName, null));
+                            Uri.fromParts("package", this.packageName, null));
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
+                    startActivity(intent)
                 }
-                dialogBuilder.setNegativeButton("Cancel") { dialog, whichButton ->
+                dialogBuilder.setNegativeButton("Cancel") { _, _ ->
                     Toast.makeText(this, "Some permissions were denied", Toast.LENGTH_LONG).show()
                 }
                 val b = dialogBuilder.create()
