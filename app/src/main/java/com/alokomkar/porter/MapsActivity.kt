@@ -364,5 +364,8 @@ class MapsActivity : AppCompatActivity(),
 
     }
 
-
+    override fun onDestroy() {
+        super.onDestroy()
+        mMapsPresenter.onDestroy()
+    }
 }

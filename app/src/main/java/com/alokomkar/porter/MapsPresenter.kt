@@ -11,6 +11,7 @@ import io.reactivex.Observer
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by Alok on 09/04/18.
@@ -59,6 +60,8 @@ class MapsPresenter( private val mapsView : MapsView ) {
 
     fun getServiceAbility() {
         mServerAPI.getServiceAbility().subscribeOn(Schedulers.io())
+                .delay(20, TimeUnit.SECONDS)
+                .repeat()
                 .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
                 .subscribe( getServicable() )
     }
@@ -108,7 +111,7 @@ class MapsPresenter( private val mapsView : MapsView ) {
             }
 
             override fun onNext(t: ETA) {
-                mapsView.onVehicleCost(t.eta)
+                mapsView.onVehicleETA(t.eta)
             }
 
             override fun onSubscribe(d: Disposable) {
@@ -145,6 +148,10 @@ class MapsPresenter( private val mapsView : MapsView ) {
 
         }
 
+    }
+
+    fun onDestroy() {
+        mCompositeDisposable.dispose()
     }
 
 
