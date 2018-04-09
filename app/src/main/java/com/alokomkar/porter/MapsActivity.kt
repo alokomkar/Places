@@ -38,9 +38,11 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.places.ui.PlacePicker
 import com.google.android.gms.maps.model.CameraPosition
 
 
+@Suppress("DEPRECATION")
 class MapsActivity : AppCompatActivity(),
         OnMapReadyCallback,
         PlaceSelectionListener,
@@ -160,11 +162,11 @@ class MapsActivity : AppCompatActivity(),
         mapsFragment.getMapAsync(this)
         etFrom.setOnClickListener {
             etPlace = etFrom
-            loadPlacesFragment()
+            openLocationsPicker()
         }
         etTo.setOnClickListener {
             etPlace = etTo
-            loadPlacesFragment()
+            openLocationsPicker()
         }
         mMapsPresenter = MapsPresenter( this )
         mResultReceiver = mMapsPresenter.getAddressResultReceiver(Handler())
@@ -211,15 +213,20 @@ class MapsActivity : AppCompatActivity(),
 
     private val PLACE_AUTOCOMPLETE_REQUEST_CODE: Int = 1234
 
-    private fun loadPlacesFragment() {
+    private fun openLocationsPicker() {
+        // Construct an intent for the place picker
         try {
-            val intent = PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-                    .build(this)
+            val intentBuilder =
+                    PlacePicker.IntentBuilder()
+            val intent = intentBuilder.build(this)
+            // Start the intent by requesting a result,
+            // identified by a request code.
             startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE)
-        } catch (e: GooglePlayServicesRepairableException) {
-            e.printStackTrace()
-        } catch (e: GooglePlayServicesNotAvailableException) {
-            e.printStackTrace()
+
+        } catch ( e : GooglePlayServicesRepairableException) {
+            // ...
+        } catch ( e : GooglePlayServicesNotAvailableException ) {
+            // ...
         }
 
     }
@@ -228,12 +235,9 @@ class MapsActivity : AppCompatActivity(),
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                val place = PlaceAutocomplete.getPlace(this, data)
+                // The user has selected a place. Extract the name and address.
+                val place = PlacePicker.getPlace(this, data)
                 onPlaceSelected(place)
-            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
-                val status = PlaceAutocomplete.getStatus(this, data)
-
-            } else if (resultCode == Activity.RESULT_CANCELED) {
             }
         }
     }
@@ -284,17 +288,17 @@ class MapsActivity : AppCompatActivity(),
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-       if( requestCode == PERMISSIONS_REQUEST_CODE_LOCATION ) {
+        if( requestCode == PERMISSIONS_REQUEST_CODE_LOCATION ) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 checkForPlayService()
             } else if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_DENIED){
                 val dialogBuilder = android.support.v7.app.AlertDialog.Builder(this)
                 dialogBuilder.setTitle("Location Permission needed to use the app")
                 dialogBuilder.setMessage("Allow app to access your location?")
-                dialogBuilder.setPositiveButton("Open App Permission") { dialog, whichButton ->
-                    val intent: Intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.fromParts("package", this.packageName, null));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                dialogBuilder.setPositiveButton("Open App Permission") { _, _ ->
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", this.packageName, null))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(intent)
                 }
                 dialogBuilder.setNegativeButton("Cancel") { _, _ ->
